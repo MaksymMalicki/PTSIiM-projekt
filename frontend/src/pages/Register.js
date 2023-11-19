@@ -17,11 +17,11 @@ function Register() {
   };
 
   return (
-    <div className='w-full'>
+    <div>
       <Navbar />
-      <div className='text-black text-center flex flex-col text-5xl w-full'>
+      <div className='text-black text-center flex flex-col text-5xl'>
         <h1 className='font-bold'>Register Page</h1>
-        <form className=' min-h-screen items-center text-2xl m-10 w-full'>
+        <form className=' min-h-screen items-center text-2xl m-10'>
           <div className='flex justify-center items-center'>
             <label className='mb-10 w-1/4'>
             Email: <br />
