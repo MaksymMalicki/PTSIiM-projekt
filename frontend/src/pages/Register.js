@@ -11,16 +11,11 @@ function Register() {
     const [personalId, setPersonalId] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-   
-  };
-
   return (
     <div>
       <Navbar />
       <div className='text-black text-center flex flex-col text-5xl'>
-        <h1 className='font-bold'>Register Page</h1>
+        <h1 className='font-bold text'>Register Page</h1>
         <form className=' min-h-screen items-center text-2xl m-10'>
           <div className='flex justify-center items-center'>
             <label className='mb-10 w-1/4'>
@@ -102,7 +97,7 @@ function Register() {
             </label>
           </div>
           <button 
-            onClick={(e) => {e.preventDefault(); handleSubmit(); navigate('/displayAppointments');}}
+            onClick={(e) => {navigate('/user');}}
             className='bg-[#a000df] w-[200px] rounded-md font-bold p-2 text-black'
           >
             Register

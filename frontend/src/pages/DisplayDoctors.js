@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import { useNavigate } from 'react-router-dom';
 
 const DisplayDoctors = () => {
+    const navigate = useNavigate();
+
   const [doctors, setDoctors] = useState([
     { id: 1, doctor: 'Dr. Smith', specialty: 'Dentist', contact: '997'  },
     { id: 2, doctor: 'Dr. Johnson', specialty: 'Dentist', contact: '112' },
@@ -28,8 +31,13 @@ const DisplayDoctors = () => {
 
   return (
     <div>
-        <Navbar />
-        <div className='flex justify-center'>
+        <Navbar>
+            <div className='flex flex-row space-x-7 items-center justify-center'>
+                <button onClick={() => navigate('/profile')} className='bg-[#a000df] w-[200px] rounded-md font-bold p-2 text-black'>Profile</button>
+                <button onClick={() => navigate('/')} className='bg-[#a000df] w-[200px] rounded-md font-bold p-2 text-black'>Log out</button>
+            </div>
+        </Navbar>
+        <div className='mt-24 flex justify-center'>
             <div className='w-3/4 border-2 p-4 border-[#a000df] shadow-xl rounded-lg'>
                 <div className='mr-60 ml-60 flex justify-between'>
                     <div>

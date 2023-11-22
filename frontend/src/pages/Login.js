@@ -16,10 +16,6 @@ const Login = () => {
   };
 
   // Event handler for form submission
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log('email:', email, 'Password:', password);
-  };
 
   return (
     <div className='w-full'>
@@ -53,7 +49,7 @@ const Login = () => {
           </label>
           <br />
           <button 
-            onClick={() => navigate('/displayAppointments')}
+            onClick={() => navigate('/user')}
             className='mt-20 bg-[#a000df] w-[200px] rounded-md font-bold p-2 text-black'
           >
             Login
