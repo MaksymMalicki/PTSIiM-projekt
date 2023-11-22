@@ -1,88 +1,120 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from .models import Appointment, Patient, Doctor
-from .serializers import AppointmentSerializer, PatientRegistrationSerializer, DoctorSerializer, PatientSerializer
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
+from .serializers import AppointmentSerializer, DoctorSerializer, UserSerializer, PatientSerializer
+from django.contrib.auth import login, logout, authenticate
+from django.http import HttpResponseBadRequest
+from django.http import JsonResponse
+from rest_framework import status
+from django.views.decorators.csrf import csrf_exempt
+import json
 
-class AppointmentSearchView(APIView):
-    def get(self, request):
+def searchAppointmentView(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
+    if request.method == 'GET':
         appointments = Appointment.objects.filter(patient=None)
         serializer = AppointmentSerializer(appointments, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+    else:
+        return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
-class PatientRegisterAppointmentView(APIView):
-    permission_classes = [IsAuthenticated]
+def pickAppointmentView(request, appointment_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    def post(self, request, appointment_id):
+    if request.method == 'POST':
         appointment = Appointment.objects.get(pk=appointment_id)
         if appointment.patient is None:
             appointment.patient = request.user
             appointment.save()
             patient_serializer = PatientSerializer(request.user.patient)
-            return Response(patient_serializer.data, status=status.HTTP_200_OK)
+            return JsonResponse(patient_serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response({'detail': 'Appointment is not available.'}, status=status.HTTP_400_BAD_REQUEST)
-    
-class PatientCancelAppointmentView(APIView):
-    permission_classes = [IsAuthenticated]
+            return JsonResponse({'detail': 'Appointment is not available.'}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def post(self, request, appointment_id):
+@csrf_exempt
+def patientCancelAppointmentView(request, appointment_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    if request.method == 'POST':
         appointment = Appointment.objects.get(pk=appointment_id)
         if appointment.patient == request.user:
             appointment.patient = None
             appointment.save()
-            return Response({'detail': 'Appointment canceled successfully.'}, status=status.HTTP_204_NO_CONTENT)
+            return JsonResponse({'detail': 'Appointment canceled successfully.'}, status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response({'detail': 'You do not have permission to cancel this appointment.'}, status=status.HTTP_403_FORBIDDEN)
-    
-class ViewDoctorDataView(APIView):
-    def get(self, request, doctor_id):
-        doctor = Doctor.objects.get(pk=doctor_id)
-        serializer = DoctorSerializer(doctor)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            return JsonResponse({'detail': 'You do not have permission to cancel this appointment.'}, status=status.HTTP_403_FORBIDDEN)
+    else:
+        return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-class PatientProfileView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
+@csrf_exempt
+def patientProfileView(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
+    if request.method == 'GET':
         patient = Patient.objects.get(user=request.user)
         serializer = PatientSerializer(patient)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request):
+        return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
         patient = Patient.objects.get(user=request.user)
         serializer = PatientSerializer(patient, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-class PatientRegistrationView(APIView):
-    def post(self, request):
-        serializer = PatientRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class PatientLoginView(ObtainAuthToken):
-    def post(self, request, *args, **kwargs):
-        response = super(PatientLoginView, self).post(request, *args, **kwargs)
-        token = Token.objects.get(key=response.data['token'])
-        return Response({'token': token.key, 'user_id': token.user_id})
-    
-class PatientLogoutView(APIView):
-    def post(self, request):
-        request.auth.delete()
-        return Response(status=status.HTTP_200_OK)
+@csrf_exempt
+def patientRegistrationView(request):
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        userSerializer = UserSerializer(data=body)
+        userSerializer.is_valid(raise_exception=True)
+        userSerializer.save()
+        return JsonResponse(userSerializer.data)
+    else:
+        return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-class DoctorListView(APIView):
-    permission_classes = [IsAuthenticated]
+@csrf_exempt
+def patientLoginView(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        if "username" is None  or "password" is None:
+            return HttpResponseBadRequest("Incorrect request data was provided")
 
-    def get(self, request):
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            return JsonResponse({'detail': 'User does not exist!'}, status=status.HTTP_404_NOT_FOUND)
+        if not user.check_password(password):
+            return JsonResponse({'detail': 'Incorrect password!'}, status=status.HTTP_400_BAD_REQUEST)
+        login(request, user)
+
+        return JsonResponse({'detail': 'Successfully logged in!'}, status=status.HTTP_200_OK)
+    else:
+        return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+def patientLogoutView(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    if request.method == 'GET':
+        logout(request)
+        response = JsonResponse({'detail': 'Successfully logged out!'})
+    else:
+        response = JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    return response
+
+def doctorListView(request):
+    print(request)
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    if request.method == 'GET':
         doctors = Doctor.objects.all()
         serializer = DoctorSerializer(doctors, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+    else:
+        return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)

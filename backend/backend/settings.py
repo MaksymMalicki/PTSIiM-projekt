@@ -52,6 +52,13 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        # other authentication classes...
+    ],
+}
+
 ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
@@ -82,6 +89,7 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
