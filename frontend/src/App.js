@@ -4,7 +4,6 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import DisplayAppointments from "./pages/DisplayAppointments";
-import Profile from "./pages/Profile";
 import DisplayDoctors from "./pages/DisplayDoctors";
 
 function App() {
