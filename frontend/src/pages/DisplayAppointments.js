@@ -21,20 +21,20 @@ const DisplayAppointments = () => {
   }, []);
 
   const filteredAppointments = appointments.filter(appointment =>
-    appointment.date.includes(searchDate) &&
-    appointment.doctor.includes(searchDoctor) &&
-    appointment.patient.includes(searchPatient)
+    appointment.date.toLowerCase().includes(searchDate.toLowerCase()) &&
+    appointment.doctor.toLowerCase().includes(searchDoctor.toLowerCase()) &&
+    appointment.patient.toLowerCase().includes(searchPatient.toLowerCase())
   );
 
   return (
     <div>
       <Navbar />
       <div className='flex justify-center'>
-        <div className='w-3/4 border-2 p-4 border-[#a000df]'>
-          <div className='mr-40 ml-40 flex justify-between'>
+        <div className='w-3/4 border-2 p-4 border-[#a000df] shadow-xl rounded-lg'>
+          <div className='mr-60 ml-60 flex justify-between'>
             <div>
               <input
-                style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border'
+                style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border text-center'
                 type="text"
                 placeholder="Search by Date"
                 value={searchDate}
@@ -43,7 +43,7 @@ const DisplayAppointments = () => {
             </div>
             <div>
               <input
-                style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border'
+                style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border text-center'
                 type="text"
                 placeholder="Search by Doctor"
                 value={searchDoctor}
@@ -52,7 +52,7 @@ const DisplayAppointments = () => {
             </div>
             <div>
               <input
-                style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border'
+                style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border text-center'
                 type="text"
                 placeholder="Search by Patient"
                 value={searchPatient}
@@ -61,8 +61,8 @@ const DisplayAppointments = () => {
             </div>
           </div><br />
           <div className='w-full'>
-            <div className='mr-40 ml-40 border-2 p-4 border-[#a000df] justify-between'>
-              <table className='w-full'>
+            <div className='mr-40 ml-40 border-2 p-4 border-[#a000df] justify-between rounded-lg shadow-lg'>
+              <table className='w-full table-fixed'>
                 <thead>
                   <tr>
                     <th>Date</th>
