@@ -3,7 +3,6 @@ from django.urls import path
 from .views import (
     searchAppointmentView,
     patientCancelAppointmentView,
-    viewDoctorDataView,
     patientProfileView,
     patientRegistrationView,
     patientLogoutView,
