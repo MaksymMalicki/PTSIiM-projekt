@@ -8,7 +8,8 @@ from .views import (
     patientLogoutView,
     patientLoginView,
     doctorListView,
-    pickAppointmentView
+    pickAppointmentView,
+    getPatientAppointmentsView,
 )
 
 urlpatterns = [
@@ -17,8 +18,9 @@ urlpatterns = [
     path("api/patient/appointments/<int:appointment_id>/register/", pickAppointmentView),
     path("api/patient/appointments/<int:appointment_id>/cancel/", patientCancelAppointmentView),
     path("api/patient/profile/", patientProfileView),
-    path("api/patient/register/", patientRegistrationView),
-    path("api/patient/login/", patientLoginView),
-    path("api/patient/logout/", patientLogoutView),
+    path("api/register/", patientRegistrationView),
+    path("api/login/", patientLoginView),
+    path("api/logout/", patientLogoutView),
     path("api/doctors/", doctorListView),
+    path("api/patient/appointments/", getPatientAppointmentsView)
 ]

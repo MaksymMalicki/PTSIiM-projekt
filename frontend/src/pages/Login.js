@@ -16,6 +16,24 @@ const Login = () => {
   };
 
   // Event handler for form submission
+  const handleLogin = () => {
+    fetch('http://localhost:8000/api/login/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ email: email, password: password }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+        navigate('/user');
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }
 
   return (
     <div className='w-full'>
@@ -49,7 +67,7 @@ const Login = () => {
           </label>
           <br />
           <button 
-            onClick={() => navigate('/user')}
+            onClick={(event) => {event.preventDefault();handleLogin()}}
             className='mt-20 bg-[#a000df] w-[200px] rounded-md font-bold p-2 text-black'
           >
             Login

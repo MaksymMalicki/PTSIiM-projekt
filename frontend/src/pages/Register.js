@@ -8,9 +8,24 @@ function Register() {
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [personalId, setPersonalId] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-
+    const handleRegister = () => {
+        fetch('http://localhost:8000/api/register/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: email, password: password, firstName: firstName, lastName: lastName, phoneNumber: phoneNumber }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Success:', data);
+            navigate('/user');
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+    }
   return (
     <div>
       <Navbar />
@@ -72,18 +87,6 @@ function Register() {
           </div>
           <div className='flex justify-center'>
             <label className='mb-10 w-1/4'>
-              Personal Identity Number: <br />
-              <input style={{outlineColor: '#a000df'}} className='w-4/5 text-black m-4 text-center focus:ring-primary-600 rounded-lg border' 
-              type='text' 
-              name='personalId' 
-              id='personalId' 
-              placeholder='Personal Identity Number' 
-              value={personalId}
-              maxLength='11'
-              onChange={(e) => setPersonalId(e.target.value)}
-              required />
-            </label>
-            <label className='mb-10 w-1/4'>
               Phone Number: <br />
               <input style={{outlineColor: '#a000df'}} className='w-4/5 text-black m-4 text-center focus:ring-primary-600 rounded-lg border' 
               type='tel' 
@@ -97,7 +100,7 @@ function Register() {
             </label>
           </div>
           <button 
-            onClick={(e) => {navigate('/user');}}
+            onClick={(e) => {handleRegister()}}
             className='bg-[#a000df] w-[200px] rounded-md font-bold p-2 text-black'
           >
             Register

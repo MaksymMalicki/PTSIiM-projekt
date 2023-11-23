@@ -1,12 +1,13 @@
 from .models import Appointment, Patient, Doctor
 from .serializers import AppointmentSerializer, DoctorSerializer, UserSerializer, PatientSerializer
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.http import HttpResponseBadRequest
 from django.http import JsonResponse
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 import json
-
+from django.contrib.auth.models import User
+@csrf_exempt
 def searchAppointmentView(request):
     if not request.user.is_authenticated:
         return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -16,7 +17,20 @@ def searchAppointmentView(request):
         return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
     else:
         return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    
+
+@csrf_exempt
+def getPatientAppointmentsView(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
+    if request.method == 'GET':
+        patient = Patient.objects.get(user=request.user)
+        appointments = Appointment.objects.filter(patient=patient)
+        serializer = AppointmentSerializer(appointments, many=True)
+        return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+    else:
+        return JsonResponse({'detail': 'Method not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+@csrf_exempt
 def pickAppointmentView(request, appointment_id):
     if not request.user.is_authenticated:
         return JsonResponse({'detail': 'Not authorized.'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -24,7 +38,11 @@ def pickAppointmentView(request, appointment_id):
     if request.method == 'POST':
         appointment = Appointment.objects.get(pk=appointment_id)
         if appointment.patient is None:
-            appointment.patient = request.user
+            try:
+                patient = Patient.objects.get(user=request.user)
+            except User.DoesNotExist:
+                return JsonResponse({'detail': 'Patient does not exist!'}, status=status.HTTP_404_NOT_FOUND)
+            appointment.patient = patient
             appointment.save()
             patient_serializer = PatientSerializer(request.user.patient)
             return JsonResponse(patient_serializer.data, status=status.HTTP_200_OK)
@@ -40,10 +58,12 @@ def patientCancelAppointmentView(request, appointment_id):
 
     if request.method == 'POST':
         appointment = Appointment.objects.get(pk=appointment_id)
-        if appointment.patient == request.user:
+        patient = Patient.objects.get(user=request.user)
+        if appointment.patient == patient:
             appointment.patient = None
             appointment.save()
-            return JsonResponse({'detail': 'Appointment canceled successfully.'}, status=status.HTTP_204_NO_CONTENT)
+            appointment_serializer = AppointmentSerializer(appointment)
+            return JsonResponse(appointment_serializer.data, status=status.HTTP_200_OK, safe=False)
         else:
             return JsonResponse({'detail': 'You do not have permission to cancel this appointment.'}, status=status.HTTP_403_FORBIDDEN)
     else:
@@ -59,7 +79,10 @@ def patientProfileView(request):
         return JsonResponse(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'PUT':
         patient = Patient.objects.get(user=request.user)
-        serializer = PatientSerializer(patient, data=request.data, partial=True)
+        raw_body = request.body
+        decoded_body = raw_body.decode('utf-8')
+        json_data = json.loads(decoded_body)
+        serializer = PatientSerializer(patient, data=json_data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(serializer.data, status=status.HTTP_200_OK)
@@ -81,13 +104,17 @@ def patientRegistrationView(request):
 @csrf_exempt
 def patientLoginView(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        if "username" is None  or "password" is None:
+        raw_body = request.body
+        decoded_body = raw_body.decode('utf-8')
+        json_data = json.loads(decoded_body)
+        email = json_data['email']
+        password = json_data['password']
+        if email == None  or password == None:
             return HttpResponseBadRequest("Incorrect request data was provided")
 
-        user = authenticate(request, username=username, password=password)
-        if user is None:
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
             return JsonResponse({'detail': 'User does not exist!'}, status=status.HTTP_404_NOT_FOUND)
         if not user.check_password(password):
             return JsonResponse({'detail': 'Incorrect password!'}, status=status.HTTP_400_BAD_REQUEST)

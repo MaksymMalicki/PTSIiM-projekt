@@ -3,14 +3,23 @@ from .models import Appointment, Patient, Doctor
 from django.contrib.auth.models import User
 
 class DoctorSerializer(serializers.ModelSerializer):
+    doctor = serializers.SerializerMethodField()
     class Meta:
         model = Doctor
-        fields = ['id', 'first_name', 'last_name', 'specialty', 'phone_number', 'email']
+        fields = ['id', 'doctor', 'specialty', 'phone_number', 'email']
+    def get_doctor(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
 
 class AppointmentSerializer(serializers.ModelSerializer):
+    doctor = serializers.StringRelatedField()
+    patient = serializers.StringRelatedField()
     class Meta:
         model = Appointment
         fields = ['id', 'doctor', 'patient', 'date', 'time']
+    def get_doctor_name(self, obj):
+        return obj.doctor.first_name + " " + obj.doctor.last_name
+    def get_patient_name(self, obj):
+        return obj.patient.first_name + " " + obj.patient.last_name
 
 class PatientRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -33,7 +42,7 @@ class UserSerializer(serializers.ModelSerializer):
     patient = PatientSerializer()
     class Meta:
         model = User
-        fields = ['username', 'password', 'patient']
+        fields = ['username', 'password', 'patient', 'email']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):

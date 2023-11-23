@@ -6,27 +6,22 @@ const DisplayDoctors = () => {
     const navigate = useNavigate();
 
   const [doctors, setDoctors] = useState([
-    { id: 1, doctor: 'Dr. Smith', specialty: 'Dentist', contact: '997'  },
-    { id: 2, doctor: 'Dr. Johnson', specialty: 'Dentist', contact: '112' },
-    { id: 3, doctor: 'Dr. Williams', specialty: 'Dentist', contact: '997' },
-    { id: 4, doctor: 'Dr. Williams', specialty: 'Dentist', contact: '997' },
-    { id: 5, doctor: 'Dr. Williams', specialty: 'Oncologist', contact: '997' },
   ]);
   const [searchDoctor, setSearchDoctor] = useState('');
   const [searchSpecialty, setSearchSpecialty] = useState('');
-  const [searchContact, setSearchContact] = useState('');
+  const [searchPhoneNumber, setSearchPhoneNumber] = useState('');
 
   useEffect(() => {
-    fetch('')
-        .then(response => response.json())
-        .then(data => setDoctors(data))
-        .catch(error => console.error('Error fetching data:', error));
+    fetch('http://localhost:8000/api/doctors/', {credentials: 'include'})
+      .then(response => response.json())
+      .then(data => setDoctors(data))
+      .catch(error => console.error('Error fetching data:', error));
   }, []);
 
   const filteredDoctors = doctors.filter(doctor =>
     doctor.doctor.toLowerCase().includes(searchDoctor.toLowerCase()) &&
     doctor.specialty.toLowerCase().includes(searchSpecialty.toLowerCase()) &&
-    doctor.contact.toString().includes(searchContact)
+    doctor.phone_number.toString().includes(searchPhoneNumber.toString())
   );
 
   return (
@@ -47,7 +42,7 @@ const DisplayDoctors = () => {
                         <input style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border text-center' type='text' value={searchSpecialty} onChange={e => setSearchSpecialty(e.target.value)} placeholder='Search by specialty' />
                     </div>
                     <div>
-                        <input style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border text-center' type='text' value={searchContact} onChange={e => setSearchContact(e.target.value)} placeholder='Search by contact number' />
+                        <input style={{outlineColor: '#a000df'}} className='focus:outline-none rounded-lg border text-center' type='text' value={searchPhoneNumber} onChange={e => setSearchPhoneNumber(e.target.value)} placeholder='Search by contact number' />
                     </div>
                 </div><br />
                 <div className='w-full'>
@@ -57,7 +52,7 @@ const DisplayDoctors = () => {
                                 <tr>
                                     <th className='width-200px'>Doctor</th>
                                     <th className='width-200px'>Specialty</th>
-                                    <th className='width-200px'>Contact Number</th>
+                                    <th className='width-200px'>Phone Number</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -65,7 +60,7 @@ const DisplayDoctors = () => {
                                     <tr key={doctor.id} className='text-center'>
                                     <td>{doctor.doctor}</td>
                                     <td>{doctor.specialty}</td>
-                                    <td>{doctor.contact}</td>
+                                    <td>{doctor.phone_number}</td>
                                     </tr>
                                 ))}
                             </tbody>
