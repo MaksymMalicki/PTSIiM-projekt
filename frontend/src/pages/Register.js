@@ -9,13 +9,14 @@ function Register() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const handleRegister = () => {
+    const handleRegister = (e) => {
+        e.preventDefault();
         fetch('http://localhost:8000/api/register/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email: email, password: password, firstName: firstName, lastName: lastName, phoneNumber: phoneNumber }),
+          body: JSON.stringify({ username: email, email: email, password: password, patient: {first_name: firstName, last_name: lastName, phone_number: phoneNumber}}),
         })
           .then(response => response.json())
           .then(data => {
@@ -100,7 +101,7 @@ function Register() {
             </label>
           </div>
           <button 
-            onClick={(e) => {handleRegister()}}
+            onClick={(e) => {handleRegister(e)}}
             className='bg-[#a000df] w-[200px] rounded-md font-bold p-2 text-black'
           >
             Register
